@@ -1,6 +1,22 @@
 #+TITLE: Doom Emacs Config
 #+AUTHOR: Trigex
 
+* EXWM
+#+BEGIN_SRC emacs-lisp
+(setq exwm-input-global-keys
+      `((,(kbd "SPC") . doom/leader)))
+(require 'exwm)
+(require 'exwm-config)
+(require 'exwm-randr)
+(require 'exwm-systemtray)
+(exwm-config-default)
+(setq exwm-randr-workspace-output-plist '(0 "HDMI-0"))
+(add-hook 'exwm-randr-screen-change-hook
+          (lambda ()
+            (start-process-shell-command "xrandr" nil "xrandr --output HDMI-0 --mode 1920x1080 --pos 0x0 --rotate normal")))
+(exwm-randr-enable)
+(exwm-systemtray-enable)
+#+END_SRC
 * User Information
 #+BEGIN_SRC emacs-lisp
 (setq user-full-name "Trigex"
@@ -31,12 +47,43 @@
 (setq doom-modeline-major-mode-icon t)
 (setq doom-modeline-major-mode-color-icon t)
 (setq doom-modeline-unicode-fallback t)
+
+(display-time-mode 1)
+(setq display-time-format "%I:%M %p")
 #+END_SRC
 
 ** Dashboard
 #+BEGIN_SRC emacs-lisp
 (setq fancy-splash-image "~/.doom.d/cirno-dash.png")
+(setq +doom-dashboard-functions
+      '(doom-dashboard-widget-banner
+        trigex-dashboard-widget-loaded))
 #+END_SRC
+Modified versions of Doom Emacs' doom-dashboard-widget-loaded and doom-display-benchmark-h so I can have an epic Cirno message!
+#+BEGIN_SRC emacs-lisp
+(defun trigex-dashboard-widget-loaded ()
+  (insert
+   "\n\n"
+   (propertize
+    (+doom-dashboard--center
+     +doom-dashboard--width
+     (trigex-display-benchmark-h 'return))
+    'face 'doom-dashboard-loaded)
+   "\n"))
+
+(defun trigex-display-benchmark-h (&optional return-p)
+  "Display a benchmark including number of packages and modules loaded.
+
+If RETURN-P, return the message as a string instead of displaying it."
+  (funcall (if return-p #'format #'message)
+           "%d frogs across %d lakes unfrozen in %.03fs"
+           (- (length load-path) (length doom--initial-load-path))
+           (if doom-modules (hash-table-count doom-modules) 0)
+           (or doom-init-time
+               (setq doom-init-time
+                     (float-time (time-subtract (current-time) before-init-time))))))
+#+END_SRC
+
 
 ** Line Numbering
 Relative line numbers are teh best.
@@ -52,6 +99,11 @@ Beacon highlights the cursor on window changes and when scrolling.
   (beacon-mode 1))
 #+END_SRC
 * Bindings & Controls
+** Leader key
+Remap the leader key to \
+#+BEGIN_SRC emacs-lisp
+;(setq doom-leader-key "\\")
+#+END_SRC
 ** Splits
 Nicer split functionality that moves the cursor to the new split automatically.
 #+BEGIN_SRC emacs-lisp
@@ -76,7 +128,19 @@ Subject to change, but I quite like these bindings for window resizing.
 (global-set-key (kbd "s-C-j") 'shrink-window)
 (global-set-key (kbd "s-C-k") 'enlarge-window)
 #+END_SRC
+** Workspace Alt Bindings
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-x w 1") '+workspace/switch-to-0)
+(global-set-key (kbd "C-x w 2") '+workspace/switch-to-1)
+(global-set-key (kbd "C-x w 3") '+workspace/switch-to-2)
+(global-set-key (kbd "C-x w 4") '+workspace/switch-to-3)
+(global-set-key (kbd "C-x w 5") '+workspace/switch-to-4)
+#+END_SRC
 
+** Caps as Control
+#+BEGIN_SRC emacs-lisp
+(shell-command "setxkbmap -option ctrl:swapcaps")
+#+END_SRC
 * Org
 ** General Configuration
 #+BEGIN_SRC emacs-lisp
@@ -89,45 +153,37 @@ org-bullets gives headigs and such nice little bulllet points
   :init
   (add-hook 'org-mode-hook (org-bullets-mode 1)))
 #+END_SRC
-** Visual Window Switching
-#+BEGIN_SRC emacs-lisp
-(use-package! switch-window
-  :config
-  (setq switch-window-input-style 'minibuffer)
-  (setq switch-window-increase 4)
-  (setq switch-window-threshold 2)
-  (setq switch-window-shortcut-style 'qwerty)
-  (setq switch-window-qwerty-shortcuts '("h" "j" "k" "l"))
-  :bind
-  ([remap other-window] . switch-window))
-#+END_SRC
+
 * Applications
 ** Circe (IRC)
-*** Server Setup
+*** Server Setup & Options
 #+BEGIN_SRC emacs-lisp
 (after! circe
+  ;; Servers
   (set-irc-server! "clan-world"
-    `(:tls t
-      :port 5597
-      :host "znc.termer.net"
-      :server-buffer-name "clan-world"
-      :nick "trigex"
-      :pass ,(+pass-get-secret "IRC/ZNC/clan-world")))
+                   `(:tls t
+                     :port 5597
+                     :host "znc.termer.net"
+                     :server-buffer-name "clan-world"
+                     :nick "trigex"
+                     :pass ,(+pass-get-secret "IRC/ZNC/clan-world")))
   (set-irc-server! "Rizon"
-     `(:tls t
-       :port 5597
-       :host "znc.termer.net"
-       :server-buffer-name "Rizon"
-       :nick "trigex"
-       :pass ,(+pass-get-secret "IRC/ZNC/Rizon")))
+                   `(:tls t
+                     :port 5597
+                     :host "znc.termer.net"
+                     :server-buffer-name "Rizon"
+                     :nick "trigex"
+                     :pass ,(+pass-get-secret "IRC/ZNC/Rizon")))
   (set-irc-server! "Freenode"
-     `(:tls t
-       :port 5597
-       :host "znc.termer.net"
-       :server-buffer-name "Freenode"
-       :nick "trigex"
-       :pass ,(+pass-get-secret "IRC/ZNC/Freenode")))
-  (circe-lagmon-mode))
+                   `(:tls t
+                     :port 5597
+                     :host "znc.termer.net"
+                     :server-buffer-name "Freenode"
+                     :nick "trigex"
+                     :pass ,(+pass-get-secret "IRC/ZNC/Freenode")))
+  ;; Options
+  (circe-lagmon-mode)
+  (enable-circe-display-images))
 #+END_SRC
 
 *** Notifications
@@ -139,10 +195,19 @@ Get notifications on all messages from friends :)
   (add-hook 'circe-server-connected-hook 'enable-circe-notifications))
 #+END_SRC
 
-* Miscellaneous Functions
+* Mscellaneous Functions
 ** Compile Literate Config
 #+BEGIN_SRC emacs-lisp
 (defun trigex-compile-config ()
   (interactive)
   (shell-command "$HOME/.emacs.d/bin/doom sync"))
+#+END_SRC
+** Screenshots
+#+BEGIN_SRC emacs-lisp
+(defun trigex-save-screenshot ()
+  (interactive)
+  (shell-command "$HOME/.local/bin/scapmgr -f -s"))
+(defun trigex-upload-screenshot ()
+  (interactive)
+  (shell-command "$HOME/.local/bin/scapmgr -f -u"))
 #+END_SRC

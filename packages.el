@@ -51,3 +51,4 @@
 (package! org-bullets)
 (package! beacon)
 (package! switch-window)
+(package! exwm)
