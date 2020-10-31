@@ -52,3 +52,7 @@
 (package! beacon)
 (package! switch-window)
 (package! exwm)
+(package! eradio)
+(package! emms)
+(package! dmenu)
+(package! symon)
