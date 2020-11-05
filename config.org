@@ -16,7 +16,7 @@
               (start-process-shell-command "xrandr" nil "xrandr --output HDMI-0 --mode 1920x1080 --pos 0x0 --rotate normal")))
   (exwm-randr-enable)
   ;; fringe size, most people prefer 1
-  (fringe-mode 3)
+  (fringe-mode 1)
   ;; emacs as a daemon, use "emacsclient <filename>" to seamlessly edit files from the terminal directly in the exwm instance
   (server-start)
   ;; this fixes issues with ido mode, if you use helm, get rid of it
@@ -114,11 +114,12 @@
 
 (defun trigex/shutdown ()
   (interactive)
-  (start-process "halt" nil "sudo" "halt"))
-#+END_SRC
+  (start-process "halt" nil "sudo" "shutdown"))
 
-#+RESULTS:
-: trigex/shutdown
+(defun trigex/reboot ()
+  (interactive)
+  (start-process "halt" nil "sudo" "reboot"))
+#+END_SRC
 
 *** Keybindings to start processes
 #+BEGIN_SRC emacs-lisp
@@ -129,9 +130,6 @@
 (global-set-key (kbd "<C-print>") 'trigex/upload-region-screenshot)
 ;; Screenshot keybinds
 #+END_SRC
-
-#+RESULTS:
-: trigex/upload-region-screenshot
 
 *** Audio Controls
 **** Volume modifier
@@ -198,9 +196,9 @@
 * Visuals
 ** Font Configuration
 #+BEGIN_SRC emacs-lisp
-(setq doom-font (font-spec :family "JetBrains Mono" :size 14)
+(setq doom-font (font-spec :family "Iosevka" :size 14)
       doom-variable-pitch-font (font-spec :family "IBM Plex Sans" :size 14))
-(setq line-spacing 1.2)
+                                        ;(setq line-spacing 1.2)
 #+END_SRC
 ** Prettify Symbols
 #+BEGIN_SRC emacs-lisp
@@ -420,7 +418,7 @@ org-bullets gives headigs and such nice little bulllet points
 Get notifications on all messages from friends
 #+BEGIN_SRC emacs-lisp
 ;; Defer notifications for 2 minutes
-(setq +irc-defer-notification 120)
+(setq +irc-defer-notifications 60)
 (setq +irc-notifications-watch-strings
       '("HeXa" "LeJustice" "termer" "HelloMrEdwards" "FM" "tas" "tas_" "sage" "sage8" "Sentaku-san" "zenhead" "tusoud" "starman" "blakkheim"))
 #+END_SRC
